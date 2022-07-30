@@ -1,4 +1,4 @@
-import torch
+from ml_structures import Neuron09Dataset
 
 
 def main():

@@ -9,6 +9,11 @@ import scipy.io
 
 NUM_NEURONS = 85
 DIM_TIME = 251  # number of evenly spaced observations in a trial; represents the time axis
+NUM_LABELS = 10  # number of types of labels (10 types from 2 to 11)
+
+
+def my_device():
+    return torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 class Neuron09Dataset(Dataset):
@@ -18,7 +23,7 @@ class Neuron09Dataset(Dataset):
     the entire dataset and its corresponding labels into GPU memory
     """
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, idx_start, idx_end):
         """
         :param str file_path: path to the .mat file containing the recorded neural signal data
         """
@@ -26,6 +31,12 @@ class Neuron09Dataset(Dataset):
 
     def __getitem__(self, idx):
         pass
+
+    def getSignals(self):
+        return self.signals
+
+    def getLabels(self):
+        return self.labels
 
 
 class SignalNet(nn.Module):
