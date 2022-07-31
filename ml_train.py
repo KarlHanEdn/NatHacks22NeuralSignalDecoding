@@ -6,22 +6,24 @@ import torch
 from ml_structures import NUM_LABELS
 from ml_structures import SignalNet
 from ml_structures import my_device
+import math
 
 BATCH_SIZE = 4  # training mini-batch size
 
 
-def create_model(dim_time):
+def create_model(dim_time, is_train):
     net = SignalNet(dim_time)
     net.to(my_device())
     return net
 
 
 def train_and_save(trainset, testset, file_path, num_epochs, loss_fn):
-    model = create_model(trainset.get_time_width())
+    model = create_model(trainset.get_time_width(), True)
     next_report = 0
     for i in range(num_epochs):
+        arg = math.sqrt(i + 1)
         avg_loss = train_loop(trainset, model, loss_fn, torch.optim.SGD(
-            model.parameters(), lr=0.001, momentum=0.9))
+            model.parameters(), lr=0.01 / arg, momentum=0.9, weight_decay=0.1 / arg))
         if i >= next_report:
             # print loss on training set
             print(f"train avg loss: {avg_loss}")
@@ -67,7 +69,7 @@ def train_loop(trainset, model, loss_fn, optimizer):
 
 
 def load_and_test(testset, file_path, loss_fn):
-    model = create_model(testset.get_time_width())
+    model = create_model(testset.get_time_width(), False)
     model.load_state_dict(torch.load(file_path))
     detailed_test(testset, model, loss_fn)
 

@@ -8,17 +8,18 @@ from torch import nn
 import scipy
 import scipy.io
 import math
+import random
 
 NUM_NEURONS = 85
 DIM_TIME = 251  # number of evenly spaced observations in a trial; represents the time axis
 NUM_LABELS = 10  # number of types of labels (10 types from 2 to 11)
 
 # preprocessing options
-APPEND_TIME_INTERVAL = 12
-APPEND_INV_TIME_INTERVAL = 12
+APPEND_TIME_INTERVAL = 0
+APPEND_INV_TIME_INTERVAL = 4
 APPEND_AVG_OVER_TIME = True
 APPEND_AVG_OVER_NEURONS = True
-APPEND_TIME_INTERVAL_STATISTIC = (0, 42)
+APPEND_TIME_INTERVAL_STATISTIC = (0, 8)
 
 
 def compute_preprocessed_data_height():
@@ -65,7 +66,6 @@ class Neuron09Dataset(Dataset):
     also responsible for performing data augmentation in the pre-processing step
     """
 
-
     def __init__(self, signals, labels):
         # to gpu device if available
         device = my_device()
@@ -84,8 +84,24 @@ class Neuron09Dataset(Dataset):
     def get_time_width(self):
         return self.signals.size(dim=1)
 
-    def augment_dataset(self, signals, labels, naugment):
-        pass
+    @staticmethod
+    def augment_dataset(signals, labels, num_duplicate):
+        signals_size = signals.size()
+        augmented_signals = torch.zeros((signals_size[0] * num_duplicate, signals_size[1], signals_size[2]))
+        labels_size = labels.size()
+        augmented_labels = torch.zeros((labels_size[0] * num_duplicate, labels_size[1]))
+
+        num_trials = signals_size[0]
+        augmented_signals[0:num_trials] = signals
+        augmented_labels[0:num_trials] = labels
+
+        for i in range(1, num_duplicate):
+            idx = num_trials * i
+            augmented_signals[idx:idx + num_trials, 0:DIM_TIME - i] = signals[:, i:DIM_TIME]
+            # add guassian noise
+            augmented_signals[idx:idx + num_trials, :, :] += torch.randn(signals_size) * 0.12
+            augmented_labels[idx:idx + num_trials] = labels
+        return augmented_signals, augmented_labels
 
     @staticmethod
     def pre_process_signals(signals):
@@ -96,7 +112,7 @@ class Neuron09Dataset(Dataset):
         print(f"Copied raw data: idx {0} to {DIM_TIME - 1} ")
 
         # perform aggregation to obtain stats about the data
-        avg_scale_factor = 50
+        avg_scale_factor = 10
         cur_idx = DIM_TIME  # where we start appending data
         if APPEND_AVG_OVER_TIME:
             print(f"Avg over time: idx {cur_idx}")
@@ -126,11 +142,11 @@ class Neuron09Dataset(Dataset):
                 inv_time_intervals = torch.zeros((APPEND_INV_TIME_INTERVAL, ))
                 time_interval_stats = torch.zeros((stats_len, ))
                 for k in range(DIM_TIME):
-                    if signals[i, k, j].item() == 0:
+                    if signals[i, k, j].item() < 0.5:
                         inactive_obs += 1
                     else:
                         if total_active_obs < APPEND_TIME_INTERVAL:
-                            time_intervals[total_active_obs] = inactive_obs * 0.1
+                            time_intervals[total_active_obs] = inactive_obs * 0.04
                         if total_active_obs < APPEND_INV_TIME_INTERVAL:
                             inv_time_intervals[total_active_obs] = 10 / (inactive_obs + 5)
                         course_count = int(inactive_obs / 6)
@@ -154,13 +170,25 @@ class Neuron09Dataset(Dataset):
 
 
 class SignalNet(nn.Module):
-    def __init__(self, dim_time):
+    POOL_PARAM = 5
+
+    def __init__(self, dim_time, is_train=True):
         super().__init__()
-        self.nn_stack = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(NUM_NEURONS * dim_time, 10),
-        )
+        self.dim_time = dim_time
+        self.is_train = is_train
+        # self.dropout = nn.Dropout(p=0.2)
+        self.pool = nn.MaxPool1d(SignalNet.POOL_PARAM)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(NUM_NEURONS * dim_time, 10)
+        # self.fc1 = nn.Linear(NUM_NEURONS * (dim_time // SignalNet.POOL_PARAM), 10)
+        # self.relu = nn.ReLU()
+        # self.fc2 = nn.Linear(20, 10)
 
     def forward(self, x):
-        logits = self.nn_stack(x)
-        return logits
+        # if x.size(dim=1) > DIM_TIME:
+        #     x = x.transpose(1, 2)
+        #     y = self.pool(x[:, :, 0:DIM_TIME])
+        #     x = torch.cat((y, x[:, :, DIM_TIME:-1]))
+        x = self.flatten(x)
+        x = self.fc1(x)
+        return x
