@@ -1,2 +1,5 @@
 AL29_psth250.mat
 .idea/
+*.pth
+__pycache__/
+*.pt
