@@ -65,6 +65,7 @@ class Neuron09Dataset(Dataset):
     also responsible for performing data augmentation in the pre-processing step
     """
 
+
     def __init__(self, signals, labels):
         # to gpu device if available
         device = my_device()

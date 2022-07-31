@@ -1,5 +1,3 @@
-from ml_structures import Neuron09Dataset
-
 import ml_train
 import ml_structures
 import torch
