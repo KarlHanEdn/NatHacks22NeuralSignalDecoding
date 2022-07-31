@@ -176,19 +176,13 @@ class SignalNet(nn.Module):
         super().__init__()
         self.dim_time = dim_time
         self.is_train = is_train
-        # self.dropout = nn.Dropout(p=0.2)
         self.pool = nn.MaxPool1d(SignalNet.POOL_PARAM)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(NUM_NEURONS * dim_time, 10)
-        # self.fc1 = nn.Linear(NUM_NEURONS * (dim_time // SignalNet.POOL_PARAM), 10)
-        # self.relu = nn.ReLU()
-        # self.fc2 = nn.Linear(20, 10)
+        self.fc1 = nn.Linear(NUM_NEURONS * (dim_time // SignalNet.POOL_PARAM), 10)
 
     def forward(self, x):
-        # if x.size(dim=1) > DIM_TIME:
-        #     x = x.transpose(1, 2)
-        #     y = self.pool(x[:, :, 0:DIM_TIME])
-        #     x = torch.cat((y, x[:, :, DIM_TIME:-1]))
+        x = x.transpose(1, 2)
+        x = self.pool(x)
         x = self.flatten(x)
         x = self.fc1(x)
         return x

@@ -16,12 +16,14 @@ def pre_process_data():
     # augmented_signals, train_labels = \
     #     ml_structures.Neuron09Dataset.augment_dataset(signals[0:655], labels[0:655], 5)
     # print(augmented_signals[1000, :, 1])
-    train_signals = ml_structures.Neuron09Dataset.pre_process_signals(signals[0:655])
+    # train_signals = ml_structures.Neuron09Dataset.pre_process_signals(signals[0:655])
+    train_signals = signals[0:655]
     train_labels = labels[0:655]
     torch.save(train_signals, TRAIN_SIGNAL_CACHE_FILE)
     torch.save(train_labels, TRAIN_LABEL_CACHE_FILE)
 
-    test_signals = ml_structures.Neuron09Dataset.pre_process_signals(signals[655:855])
+    # test_signals = ml_structures.Neuron09Dataset.pre_process_signals(signals[655:855])
+    test_signals = signals[655:855]
     test_labels = labels[655:855]
     torch.save(test_signals, TEST_SIGNAL_CACHE_FILE)
     torch.save(test_labels, TEST_LABEL_CACHE_FILE)
@@ -54,7 +56,7 @@ def train_and_test_model():
 
 
 def main():
-    # pre_process_data()
+    pre_process_data()
     train_and_test_model()
 
 
