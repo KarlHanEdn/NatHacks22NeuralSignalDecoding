@@ -42,15 +42,14 @@ def load_saved_data(training=True):
 def train_and_test_model():
     train_signals, train_labels = load_saved_data(training=True)
     test_signals, test_labels = load_saved_data(training=False)
-    time_slice = slice(0, 251)
+    time_slice = slice(251, 267)
     # for i in range(251, 267):
     #     print(torch.sum(train_signals[:, i, :]))
     trainset = ml_structures.Neuron09Dataset(train_signals[:, time_slice, :], train_labels)
     testset = ml_structures.Neuron09Dataset(test_signals[:, time_slice, :], test_labels)
-    loss_fn = torch.nn.CrossEntropyLoss()
     num_epochs = 50
-    ml_train.train_and_save(trainset, testset, PARAMETER_FILE_PATH, num_epochs, loss_fn)
-    ml_train.load_and_test(testset, PARAMETER_FILE_PATH, loss_fn)
+    ml_train.train_and_save(trainset, testset, PARAMETER_FILE_PATH)
+    ml_train.load_and_test(testset, PARAMETER_FILE_PATH)
 
 
 def main():
