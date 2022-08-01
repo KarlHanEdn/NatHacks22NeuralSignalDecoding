@@ -21,7 +21,8 @@ The model obtains 94% accuracy on reserved test set of 200 trials.
 ### Usage
 
 To run the program, you need to have Python environment setup for [PyTorch](https://pytorch.org/).
-You can learn a model and test it using main.py as reference.
+You can learn a model and test it using main.py as reference, which takes a .mat file and split it 
+to training/testing datasets and train/test the model.
 
 
 ### Acknowledgements
