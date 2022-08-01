@@ -13,17 +13,12 @@ TEST_LABEL_CACHE_FILE = "test_labels.pt"
 
 def pre_process_data():
     signals, labels = ml_structures.load_data_from_mat(DATASET_FILE_PATH, 0, 855)
-    # augmented_signals, train_labels = \
-    #     ml_structures.Neuron09Dataset.augment_dataset(signals[0:655], labels[0:655], 5)
-    # print(augmented_signals[1000, :, 1])
-    # train_signals = ml_structures.Neuron09Dataset.pre_process_signals(signals[0:655])
-    train_signals = signals[0:655]
+    train_signals = signals[0:655, :, 0:85]
     train_labels = labels[0:655]
     torch.save(train_signals, TRAIN_SIGNAL_CACHE_FILE)
     torch.save(train_labels, TRAIN_LABEL_CACHE_FILE)
 
-    # test_signals = ml_structures.Neuron09Dataset.pre_process_signals(signals[655:855])
-    test_signals = signals[655:855]
+    test_signals = signals[655:855, :, 0:85]
     test_labels = labels[655:855]
     torch.save(test_signals, TEST_SIGNAL_CACHE_FILE)
     torch.save(test_labels, TEST_LABEL_CACHE_FILE)
@@ -45,8 +40,6 @@ def train_and_test_model():
     train_signals, train_labels = load_saved_data(training=True)
     test_signals, test_labels = load_saved_data(training=False)
     time_slice = slice(0, 251)
-    # for i in range(251, 267):
-    #     print(torch.sum(train_signals[:, i, :]))
     trainset = ml_structures.Neuron09Dataset(train_signals[:, time_slice, :], train_labels)
     testset = ml_structures.Neuron09Dataset(test_signals[:, time_slice, :], test_labels)
     loss_fn = torch.nn.CrossEntropyLoss()

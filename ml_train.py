@@ -11,14 +11,14 @@ import math
 BATCH_SIZE = 4  # training mini-batch size
 
 
-def create_model(dim_time, is_train):
-    net = SignalNet(dim_time)
+def create_model(dim_time, num_neurons):
+    net = SignalNet(dim_time, num_neurons)
     net.to(my_device())
     return net
 
 
 def train_and_save(trainset, testset, file_path, num_epochs, loss_fn):
-    model = create_model(trainset.get_time_width(), True)
+    model = create_model(trainset.get_time_width(), trainset.get_num_neurons())
     next_report = 0
     for i in range(num_epochs):
         arg = math.sqrt(i + 1)
@@ -69,7 +69,7 @@ def train_loop(trainset, model, loss_fn, optimizer):
 
 
 def load_and_test(testset, file_path, loss_fn):
-    model = create_model(testset.get_time_width(), False)
+    model = create_model(testset.get_time_width(), testset.get_num_neurons())
     model.load_state_dict(torch.load(file_path))
     detailed_test(testset, model, loss_fn)
 
