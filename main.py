@@ -3,8 +3,9 @@ import ml_structures
 import torch
 
 DATASET_FILE_PATH = "AL29_psth250.mat"
-PARAMETER_FILE_PATH = "signal_net.pth"
+PARAMETER_FILE_PATH = "signal_net.pth"  # trained model parameters file
 
+# Signals are inputs, and labels are outputs
 TRAIN_SIGNAL_CACHE_FILE = "train_signals.pt"
 TRAIN_LABEL_CACHE_FILE = "train_labels.pt"
 TEST_SIGNAL_CACHE_FILE = "test_signals.pt"
@@ -12,6 +13,9 @@ TEST_LABEL_CACHE_FILE = "test_labels.pt"
 
 
 def pre_process_data():
+    """
+    load the training and testing datasets from a Matlab .mat file, and save the resulting data tensors as separate files
+    """
     signals, labels = ml_structures.load_data_from_mat(DATASET_FILE_PATH, 0, 855)
     train_signals = signals[0:655, :, 0:85]
     train_labels = labels[0:655]
@@ -25,6 +29,9 @@ def pre_process_data():
 
 
 def load_saved_data(training=True):
+    """
+    :param bool training: whether the data loaded is training data or testing data
+    """
     if training:
         signal_file = TRAIN_SIGNAL_CACHE_FILE
         label_file = TRAIN_LABEL_CACHE_FILE
@@ -37,11 +44,13 @@ def load_saved_data(training=True):
 
 
 def train_and_test_model():
+    """
+    train the model on the training data and then test it on the testing data
+    """
     train_signals, train_labels = load_saved_data(training=True)
     test_signals, test_labels = load_saved_data(training=False)
-    time_slice = slice(0, 251)
-    trainset = ml_structures.Neuron09Dataset(train_signals[:, time_slice, :], train_labels)
-    testset = ml_structures.Neuron09Dataset(test_signals[:, time_slice, :], test_labels)
+    trainset = ml_structures.Neuron09Dataset(train_signals, train_labels)
+    testset = ml_structures.Neuron09Dataset(test_signals, test_labels)
     loss_fn = torch.nn.CrossEntropyLoss()
     num_epochs = 50
     ml_train.train_and_save(trainset, testset, PARAMETER_FILE_PATH, num_epochs, loss_fn)

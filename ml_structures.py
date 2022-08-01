@@ -20,6 +20,9 @@ APPEND_TIME_INTERVAL_STATISTIC = (0, 8)
 
 
 def my_device():
+    """
+    return the compatible device for the current computer
+    """
     return torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
@@ -43,9 +46,8 @@ def load_data_from_mat(file_path, idx_start, idx_end):
 class Neuron09Dataset(Dataset):
     """
     represents a neural signal recording dataset
-    responsible for reading the dataset and labels from a .mat file, pre-processing them as well as caching
+    responsible for keeping the inputs and outputs of the dataset as well as caching
     the entire dataset and its corresponding labels into GPU memory
-    also responsible for performing data augmentation in the pre-processing step
     """
 
     def __init__(self, signals, labels):
@@ -71,7 +73,7 @@ class Neuron09Dataset(Dataset):
 
 
 class SignalNet(nn.Module):
-    POOL_PARAM = 5
+    POOL_PARAM = 5  # pooling parameter over time dimension
 
     def __init__(self, dim_time, num_neurons, is_train=True):
         super().__init__()

@@ -12,12 +12,26 @@ BATCH_SIZE = 4  # training mini-batch size
 
 
 def create_model(dim_time, num_neurons):
+    """
+    create a model that maps dim_time * num_neurons inputs into a NUM_LABELS vector,
+    the highest number of which is the predicted class
+    :param int dim_time: the width of time dimension
+    :param int num_neurons: the width of neurons dimension
+    """
     net = SignalNet(dim_time, num_neurons)
     net.to(my_device())
     return net
 
 
 def train_and_save(trainset, testset, file_path, num_epochs, loss_fn):
+    """
+    train the model on entire trainset for one epoch
+    :param Neuron09Dataset trainset:
+    :param Neuron09Dataset testset:
+    :param str file_path: the path to save the trained model parameters
+    :param int num_epochs:
+    :param loss_fn: the loss function
+    """
     model = create_model(trainset.get_time_width(), trainset.get_num_neurons())
     next_report = 0
     for i in range(num_epochs):
@@ -69,6 +83,12 @@ def train_loop(trainset, model, loss_fn, optimizer):
 
 
 def load_and_test(testset, file_path, loss_fn):
+    """
+    load the model from file and test it on the provided test set
+    :param Neuron09Dataset testset:
+    :param str file_path: path to the file in which the model parameters are saved
+    :param loss_fn:
+    """
     model = create_model(testset.get_time_width(), testset.get_num_neurons())
     model.load_state_dict(torch.load(file_path))
     detailed_test(testset, model, loss_fn)
